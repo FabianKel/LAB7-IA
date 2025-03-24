@@ -8,12 +8,12 @@ import time
 
 def jugar_partida(player1, player2, verbose=False):
     """Juega una partida entre dos jugadores y devuelve el resultado."""
-    game = Connect4()
+    game = Connect4(usar_turtle= False)
     game.player1 = player1
     game.player2 = player2
     game.jugador_actual = player1
     
-    game.crear_tablero()
+    #game.crear_tablero()
     
     while True:
         try:
@@ -57,9 +57,9 @@ def evaluar_agentes(td_agent, minimax_agent, alpha_beta_agent, num_partidas=50):
         "Minimax vs Alpha-Beta": {"minimax_win": 0, "alpha_beta_win": 0, "empate": 0}
     }
     
-    player_td = Player("Red", td_agent)
-    player_minimax = Player("Blue", minimax_agent)
-    player_alpha_beta = Player("Purple", alpha_beta_agent)
+    player_td = Player("Red", td_agent, nombre_agente="TD Learning")
+    player_minimax = Player("Blue", minimax_agent, nombre_agente="Minimax")
+    player_alpha_beta = Player("Purple", alpha_beta_agent, nombre_agente="MinimaxAB")
     
     print(f"Evaluando TD vs Minimax ({num_partidas} partidas)...")
     resultados = jugar_y_registrar_partidas(player_td, player_minimax, num_partidas, resultados, "TD vs Minimax", "td_win", "minimax_win")
@@ -94,8 +94,8 @@ def crear_graficas(resultados):
     # Resultados TD vs Minimax
     labels = ['TD Wins', 'Minimax Wins', 'Empates']
     values = [resultados["TD vs Minimax"]["td_win"], 
-              resultados["TD vs Minimax"]["minimax_win"], 
-              resultados["TD vs Minimax"]["empate"]]
+            resultados["TD vs Minimax"]["minimax_win"], 
+            resultados["TD vs Minimax"]["empate"]]
     ax1.bar(labels, values, color=['red', 'blue', 'gray'])
     ax1.set_title('TD Learning vs Minimax')
     ax1.set_ylabel('Número de partidas')
@@ -103,16 +103,16 @@ def crear_graficas(resultados):
     # Resultados TD vs Alpha-Beta
     labels = ['TD Wins', 'Alpha-Beta Wins', 'Empates']
     values = [resultados["TD vs Alpha-Beta"]["td_win"], 
-              resultados["TD vs Alpha-Beta"]["alpha_beta_win"], 
-              resultados["TD vs Alpha-Beta"]["empate"]]
+            resultados["TD vs Alpha-Beta"]["alpha_beta_win"], 
+            resultados["TD vs Alpha-Beta"]["empate"]]
     ax2.bar(labels, values, color=['red', 'purple', 'gray'])
     ax2.set_title('TD Learning vs Alpha-Beta')
     
     # Resultados Minimax vs Alpha-Beta
     labels = ['Minimax Wins', 'Alpha-Beta Wins', 'Empates']
     values = [resultados["Minimax vs Alpha-Beta"]["minimax_win"], 
-              resultados["Minimax vs Alpha-Beta"]["alpha_beta_win"], 
-              resultados["Minimax vs Alpha-Beta"]["empate"]]
+            resultados["Minimax vs Alpha-Beta"]["alpha_beta_win"], 
+            resultados["Minimax vs Alpha-Beta"]["empate"]]
     ax3.bar(labels, values, color=['blue', 'purple', 'gray'])
     ax3.set_title('Minimax vs Alpha-Beta')
     
@@ -124,10 +124,8 @@ def main():
     """Función principal para configurar y evaluar los agentes."""
     depth_minimax = 3
     depth_alpha_beta = 3
-    episodios_td = 5000
-    
-    # Solicitar al usuario el número de partidas
-    num_partidas = int(input("Ingrese el número de partidas que desea jugar: "))
+    episodios_td = 800
+    num_partidas = 50 
     
     print("Creando agentes...")
     td_agent = entrenar_agente_td(jugador_id=1, episodios=episodios_td)

@@ -6,7 +6,7 @@ class Agent:
         self.id = str(player_id)  
         self.opponent_id = '2' if self.id == '1' else '1'  
         self.alpha_beta = alpha_beta
-        self.depth = depth if not alpha_beta else depth+1
+        self.depth = depth
 
     def evaluar_tablero(self, tablero):
         """Evalúa el tablero considerando agrupaciones y posición."""

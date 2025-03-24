@@ -2,7 +2,9 @@ from connect4 import Connect4
 from agent import Agent
 from td_agent import TDAgent
 from player import Player
+import os
 
+os.environ["DEMO_MODE"] = "1"
 def elegir_modo():
     print("Selecciona el modo de juego:")
     print("1. Humano vs Humano")
