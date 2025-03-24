@@ -3,9 +3,10 @@ import random
 import math
 import pickle
 from collections import defaultdict
+from agent import Agent
 
 class TDAgent:
-    def __init__(self, player_id, epsilon=0.1, alpha=0.1, gamma=0.9, load_file=None):
+    def __init__(self, player_id, epsilon=1.0, alpha=0.005, gamma=0.9, load_file=None):
         self.id = str(player_id)
         self.opponent_id = '2' if self.id == '1' else '1'
         self.epsilon = epsilon  # Probabilidad de exploración
@@ -34,7 +35,9 @@ class TDAgent:
 
     def simular_movimiento(self, tablero, columna, player_id):
         """Simula un movimiento y devuelve el nuevo estado del tablero."""
+        columna -= 1 
         nuevo_tablero = [list(fila) for fila in tablero]
+
         for fila in range(5, -1, -1):
             if nuevo_tablero[fila][columna] in (0, '0'):
                 nuevo_tablero[fila][columna] = player_id
@@ -53,7 +56,7 @@ class TDAgent:
         for col in self.movimientos_validos(nuevo_tablero):
             tablero_oponente = self.simular_movimiento(nuevo_tablero, col, self.opponent_id)
             if self.check_victoria(tablero_oponente, self.opponent_id):
-                return -0.5
+                return -1.0
         
         # Posición de amenaza (victoria en el próximo movimiento)
         for col in self.movimientos_validos(nuevo_tablero):
@@ -77,7 +80,7 @@ class TDAgent:
         
         # Exploración
         if random.random() < self.epsilon:
-            return random.choice(acciones_validas) + 1  # +1 para ajustar a numeración de connect4.py
+            return random.choice(acciones_validas) + 1  
         
         # Explotación
         q_valores = self.q_values[clave_estado]
@@ -85,7 +88,7 @@ class TDAgent:
         valores_validos = [(accion, q_valores[accion]) for accion in acciones_validas]
         mejor_accion = max(valores_validos, key=lambda x: x[1])[0]
         
-        return mejor_accion + 1  # +1 para ajustar a numeración de connect4.py
+        return mejor_accion + 1  
 
     def actualizar_q(self, estado, accion, recompensa, nuevo_estado):
         """Actualiza los valores Q usando TD Learning."""
@@ -102,61 +105,66 @@ class TDAgent:
         )
 
     def aprender(self, episodios=1000):
-        """Entrena al agente jugando contra sí mismo."""
+        minimax = Agent(depth=3, player_id=self.opponent_id, alpha_beta=False)
+
         for episodio in range(episodios):
             if episodio % 100 == 0:
-                print(f"Entrenando episodio {episodio}/{episodios}")
-                
-            # Inicializar tablero
+                print(f"Episodio {episodio}/{episodios}")
+
             tablero = [[0 for _ in range(7)] for _ in range(6)]
-            turno = 0
             jugador_actual = self.id
-            
-            while True:
-                # Seleccionar acción con epsilon-greedy
-                clave_estado = self.estado_a_clave(tablero)
+            game_over = False
+
+            while not game_over:
                 acciones_validas = self.movimientos_validos(tablero)
-                
-                if not acciones_validas:  # Empate
-                    break
-                
-                if random.random() < self.epsilon:
-                    accion = random.choice(acciones_validas)
-                else:
-                    valores_q = [(a, self.q_values[clave_estado][a]) for a in acciones_validas]
-                    accion = max(valores_q, key=lambda x: x[1])[0]
-                
-                # Ejecutar acción
-                nuevo_tablero = self.simular_movimiento(tablero, accion, jugador_actual)
-                
-                # Calcular recompensa
-                recompensa = 0
-                game_over = False
-                
-                if self.check_victoria(nuevo_tablero, jugador_actual):
-                    recompensa = 1.0 if jugador_actual == self.id else -1.0
-                    game_over = True
-                elif not self.movimientos_validos(nuevo_tablero):  # Empate
-                    recompensa = 0.1
-                    game_over = True
-                
-                # Actualizar Q-values
+                if not acciones_validas:
+                    break  # empate
+
                 if jugador_actual == self.id:
+                    clave_estado = self.estado_a_clave(tablero)
+
+                    if random.random() < self.epsilon:
+                        accion = random.choice(acciones_validas)
+                    else:
+                        valores_q = [(a, self.q_values[clave_estado][a]) for a in acciones_validas]
+                        accion = max(valores_q, key=lambda x: x[1])[0]
+
+                    accion_jugada = accion + 1  # +1 porque usarás columna 1-7
+                    nuevo_tablero = self.simular_movimiento(tablero, accion_jugada, self.id)
+
+                    if self.check_victoria(nuevo_tablero, self.id):
+                        recompensa = 1.0
+                        self.actualizar_q(tablero, accion, recompensa, nuevo_tablero)
+                        game_over = True
+                        continue
+                    elif not self.movimientos_validos(nuevo_tablero):
+                        recompensa = 0.0
+                        self.actualizar_q(tablero, accion, recompensa, nuevo_tablero)
+                        game_over = True
+                        continue
+
+                    recompensa = self.calcular_recompensa(tablero, accion_jugada, self.id)
                     self.actualizar_q(tablero, accion, recompensa, nuevo_tablero)
-                
-                # Verificar fin del juego
-                if game_over:
-                    break
-                
-                # Cambiar turno
-                tablero = nuevo_tablero
-                jugador_actual = self.opponent_id if jugador_actual == self.id else self.id
-                turno += 1
-            
-            # Ajustar epsilon (disminuir exploración con el tiempo)
-            self.epsilon = max(0.05, self.epsilon * 0.99)
-        
+
+                    tablero = nuevo_tablero
+                    jugador_actual = self.opponent_id
+
+                else:
+                    accion_minimax = minimax.elegir_movimiento(tablero)
+                    tablero = self.simular_movimiento(tablero, accion_minimax, self.opponent_id)
+
+                    if self.check_victoria(tablero, self.opponent_id):
+                        recompensa = -1.0
+                        self.actualizar_q(tablero, accion_minimax - 1, recompensa, tablero)
+                        game_over = True
+                        continue
+
+                    jugador_actual = self.id
+
+            self.epsilon = max(0.2, self.epsilon * 0.995)
+
         print("Entrenamiento completado.")
+
 
     def guardar_modelo(self, filename):
         """Guarda el modelo de valores Q en un archivo."""

@@ -3,6 +3,9 @@ from agent import Agent
 from td_agent import TDAgent
 from player import Player
 import time
+import os
+
+os.environ["DEMO_MODE"] = "1"
 
 def jugar_demostracion(player1, player2, delay=0.5):
     """Juega una partida entre dos jugadores con visualización."""
