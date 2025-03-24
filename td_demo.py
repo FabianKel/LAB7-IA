@@ -4,41 +4,12 @@ from td_agent import TDAgent
 from player import Player
 import time
 
-def jugar_demostracion(player1, player2, delay=0.5):
+def jugar_demostracion(game, player1, player2, delay=0.5):
     """Juega una partida entre dos jugadores con visualización."""
-    game = Connect4()
-    game.player1 = player1
-    game.player2 = player2
-    game.jugador_actual = player1
     
     game.crear_tablero()
     
-    while True:
-        try:
-            print(f"Turno de {game.jugador_actual.color}")
-            
-            if game.jugador_actual.agent:
-                columna = game.jugador_actual.agent.elegir_movimiento(game.get_estado_tablero())
-                print(f"Columna elegida: {columna}")
-            else:
-                raise ValueError("Este script requiere jugadores con agentes.")
-            
-            # Pequeña pausa para ver el juego
-            time.sleep(delay)
-            
-            resultado = game.colocar_ficha(columna)
-            if resultado:
-                print(f"¡Gana {game.jugador_actual.color}!")
-                return game.jugador_actual.color
-            
-            # Verificar empate
-            if all(game.espaciosY[i] >= 6 for i in range(1, 8)):
-                print("¡Empate!")
-                return "empate"
-                
-        except Exception as e:
-            print(f"Error: {e}")
-            return "error"
+    game.play(player1,player2)
 
 def main():
     # Cargar agente TD entrenado
@@ -62,13 +33,16 @@ def main():
     
     # Jugar demostraciones
     print("\n--- Demostración 1: TD Learning vs Minimax ---")
-    jugar_demostracion(player_td, player_minimax, delay=0.3)
-    
+    game1 = Connect4()
+    jugar_demostracion(game1, player_td, player_minimax, delay=0.3)
+
+    game2 = Connect4()
     print("\n--- Demostración 2: TD Learning vs Alpha-Beta ---")
-    jugar_demostracion(player_td, player_alpha_beta, delay=0.3)
+    jugar_demostracion(game2, player_td, player_alpha_beta, delay=0.3)
     
+    game3 = Connect4()
     print("\n--- Demostración 3: Minimax vs Alpha-Beta ---")
-    jugar_demostracion(player_minimax, player_alpha_beta, delay=0.3)
+    jugar_demostracion(game3, player_minimax, player_alpha_beta, delay=0.3)
 
 if __name__ == "__main__":
     main()

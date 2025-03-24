@@ -73,6 +73,7 @@ class Connect4:
         if self.verificar_victoria(columna, fila, self.jugador_actual):
             print(f"¡Gana {self.jugador_actual.color}!")
             turtle.textinput("Mensaje", f"¡Gana {self.jugador_actual.color}!\nPresiona 'OK' para salir")
+            self.reiniciar_juego()
             return True
 
         # Cambiar turno
@@ -144,3 +145,12 @@ class Connect4:
         for (c, f) in self.player2Pos:
             tablero[6 - f][c - 1] = "2"  
         return tablero
+
+    def reiniciar_juego(self):
+        """Elimina todos los dibujos en la pantalla y resetea las posiciones."""
+        self.tablero.clear()
+        self.circulo.clear()
+        self.espaciosY = [0] * 8
+        self.player1Pos.clear()
+        self.player2Pos.clear()
+        self.jugador_actual = None
