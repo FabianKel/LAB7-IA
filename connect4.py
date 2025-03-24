@@ -27,7 +27,6 @@ class Connect4:
         if not self.usar_turtle:
             return
 
-        turtle.clearscreen()
         self.tablero = turtle.Turtle()
         self.tablero.ht()
         self.tablero.width(10)
@@ -85,7 +84,7 @@ class Connect4:
             print(f"¡Gana {nombre}!")
             if self.usar_turtle:
                 turtle.textinput("Mensaje", f"¡Gana {nombre}!\nPresiona 'OK' para salir")
-                self.reiniciar_juego()
+            self.reiniciar_juego()
             return True
 
         self.jugador_actual = self.player2 if self.jugador_actual == self.player1 else self.player1

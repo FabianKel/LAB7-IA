@@ -7,9 +7,9 @@ import os
 
 os.environ["DEMO_MODE"] = "1"
 
-def jugar_demostracion(game, player1, player2, delay=0.5):
+def jugar_demostracion(game, player1, player2):
     """Juega una partida entre dos jugadores con visualización."""
-    
+
     game.crear_tablero()
     
     game.play(player1,player2)
@@ -30,22 +30,22 @@ def main():
     alpha_beta_agent = Agent(depth=3, player_id=2, alpha_beta=True)
     
     # Crear jugadores
-    player_td = Player("Red", td_agent)
-    player_minimax = Player("Blue", minimax_agent)
-    player_alpha_beta = Player("Purple", alpha_beta_agent)
+    player_td = Player("Red", td_agent, "td_agent")
+    player_minimax = Player("Blue", minimax_agent, "minimax_agent")
+    player_alpha_beta = Player("Purple", alpha_beta_agent, "alpha_beta_agent")
     
     # Jugar demostraciones
     print("\n--- Demostración 1: TD Learning vs Minimax ---")
     game1 = Connect4()
-    jugar_demostracion(game1, player_td, player_minimax, delay=0.3)
+    jugar_demostracion(game1, player_td, player_minimax)
 
     game2 = Connect4()
     print("\n--- Demostración 2: TD Learning vs Alpha-Beta ---")
-    jugar_demostracion(game2, player_td, player_alpha_beta, delay=0.3)
+    jugar_demostracion(game2, player_td, player_alpha_beta)
     
     game3 = Connect4()
     print("\n--- Demostración 3: Minimax vs Alpha-Beta ---")
-    jugar_demostracion(game3, player_minimax, player_alpha_beta, delay=0.3)
+    jugar_demostracion(game3, player_minimax, player_alpha_beta)
 
 if __name__ == "__main__":
     main()
